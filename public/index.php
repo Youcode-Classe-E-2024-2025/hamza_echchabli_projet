@@ -18,6 +18,14 @@ $router->addRoute('POST', 'auth', function() {
         require_once '../views/auth.php';
     });
 
+$router->addRoute('POST', 'home', function() {
+        require_once '../views/home.php';
+    });
+
+    $router->addRoute('GET', 'kanban', function() {
+        require_once '../views/kanbanDisplay.php';
+    });   
+
 
     $router->addRoute('POST', 'handelauth', function() {
         $userController = new controllers\UserController();

@@ -31,7 +31,7 @@ class UserController {
             return ['success' => false, 'message' => 'email not found'];
         }
 
-        // Basic password check (in a real app, use password_verify with hashed passwords)
+
         if ($user->getPassword() === $password) {
             return ['success' => true, 'message' => 'Login successful', 'user' => $user];
         } else {
@@ -60,17 +60,19 @@ class UserController {
                     'email' => $requestData['email'],
                     'password' => $requestData['password']
                 ]);
-                echo json_encode($res);
-    
+                $_SESSION['user_id'] = $res['user_id'];
+                header('Location: /home');
+                exit();
              }
              else {
-                // If no valid action is provided, return an error message
+
                 throw new \Exception("Invalid action specified");
             }
 
         }catch (\Exception $e) {
-                // Handle any exceptions by returning a 500 error with the exception message
-                http_response_code(500);  // Internal Server Error
+            
+
+                http_response_code(500);  
                 echo json_encode([
                     'error' => true,
                     'message' => $e->getMessage()
@@ -85,7 +87,8 @@ class UserController {
     }
 
     private function handleError($message, $statusCode = 400) {
-        // Set HTTP response code
+
+
         http_response_code($statusCode);
 
 

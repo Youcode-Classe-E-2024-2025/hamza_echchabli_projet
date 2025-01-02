@@ -22,7 +22,7 @@ class Router {
      */
     public function addRoute($method, $path, $handler) {
         $this->routes[] = [
-          
+            'method' => $method,
             'path' => $path,
             'handler' => $handler
         ];
