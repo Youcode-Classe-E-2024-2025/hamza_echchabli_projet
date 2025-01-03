@@ -13,42 +13,54 @@ class UserModel {
 
    
     public function create($data){
-        
-        if($this->ifExists($data['email'])){
-            return ['success' => false, 'message' => 'Email already exists'];
+        // Check if email already exists
+        $existingUser = $this->ifExists($data['email']);
+        if ($existingUser) {
+            return [
+                'status' => 'exists',
+                'message' => 'Email already registered',
+                'user_id' => null
+            ];
         }
 
-
-        try{
+        try {
             $res = DB::query(
                 "INSERT INTO users (username, email, password) VALUES (:username, :email, :password) RETURNING id",
                 $data
             );
             $result = $res->fetch(\PDO::FETCH_ASSOC);
-        return ['success' => true, 'user_id' => $result['id']];
-        }catch(\Exception $e){
-            return ['success' => false, 'message' => 'Registration failed: ' . $e->getMessage()];
+            
+            return [
+                'status' => 'success',
+                'message' => 'User registered successfully',
+                'user_id' => $result['id']
+            ];
+        } catch(\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Registration failed: ' . $e->getMessage(),
+                'user_id' => null
+            ];
         }
-
-
-
     }
 
 
     public function getOneByEmail($email){
-
         $res = $this->ifExists($email);
         
         if (empty($res)) {
-            return null;
+            return [
+                'status' => 'not_exist',
+                'message' => 'User not found',
+                'data' => null
+            ];
         }
 
-       return new UserEntity(
-            $res['id'], 
-            $res['username'], 
-            $res['email'], 
-            $res['password']
-        );
+        return [
+            'status' => 'exists',
+            'message' => 'User found',
+            'data' => $res
+        ];
     }
 
 

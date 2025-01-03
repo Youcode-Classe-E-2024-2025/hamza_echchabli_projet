@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteBase /
+
+# Handle API endpoints
+RewriteRule ^api/tasks$ controllers/taskController.php [L]
+
+# Handle views
+RewriteRule ^kanban$ views/kanbanDisplay.php [L]
+RewriteRule ^home$ views/home.php [L]
+RewriteRule ^myproject$ views/myproject.php [L]
+RewriteRule ^auth$ views/auth.php [L]
+
+# Default route
+RewriteRule ^$ views/home.php [L]

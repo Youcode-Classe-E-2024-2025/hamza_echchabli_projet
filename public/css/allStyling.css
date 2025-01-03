@@ -59,13 +59,17 @@ body {
     gap: 0.5rem;
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    
 }
-
+.hidden{
+    opacity: 0;
+}
 .nav-brand i {
     color: var(--accent-color);
 }
-
+.ML_VV{
+    margin-left: 20px;
+}
 .nav-links {
     display: flex;
     align-items: center;
@@ -73,7 +77,7 @@ body {
 }
 
 .nav-links a {
-    color: var(--text-secondary);
+    color: #ffffff;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
@@ -111,6 +115,7 @@ body {
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 8px;
+    background-color:rgba(175, 124, 232, 0.15);
     transition: background-color 0.2s;
 }
 
@@ -127,15 +132,15 @@ body {
 /* Header Styles */
 header {
     max-width: 1200px;
-    margin: 0 auto 2rem;
+    margin: 0 auto 1rem;
     padding: 0 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -262,12 +267,18 @@ h1 {
 }
 
 .board-link {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.board-link:hover {
+    background-color: var(--accent-hover);
 }
 
 /* Modal Styles */

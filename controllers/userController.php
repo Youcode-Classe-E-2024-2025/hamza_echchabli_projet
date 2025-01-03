@@ -19,81 +19,96 @@ class UserController {
 
         // Attempt to create user
         $result = $this->userModel->create($data);
-
-        return $result;
+        
+        if ($result['status'] === 'exists') {
+            return ['success' => false, 'message' => $result['message']];
+        }
+        
+        if ($result['status'] === 'success') {
+            return ['success' => true, 'user_id' => $result['user_id']];
+        }
+        
+        return ['success' => false, 'message' => $result['message']];
     }
 
     public function login($email, $password) {
         // Find user by email
         $user = $this->userModel->getOneByEmail($email);
 
-        if ($user === null) {
-            return ['success' => false, 'message' => 'email not found'];
+        if ($user['status'] === 'not_exist') {
+            return ['success' => false, 'message' => 'User does not exist'];
         }
 
-
-        if ($user->getPassword() === $password) {
-            return ['success' => true, 'message' => 'Login successful', 'user' => $user];
-        } else {
-            return ['success' => false, 'message' => 'Invalid password'];
+        if ($user['data']['password'] === $password) {
+            return ['success' => true, 'user' => $user['data']];
         }
+        
+        return ['success' => false, 'message' => 'Invalid password'];
     }
 
     public function handleRequests() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' ){
+        try {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                // Check if login or register
+                if (isset($_POST['login'])) {
+                    $email = $_POST['email'] ?? null;
+                    $password = $_POST['password'] ?? null;
+    
+                    if (!$email || !$password) {
+                        $_SESSION['auth_error'] = 'Email and password are required.';
+                        header('Location: /auth');
+                        exit();
+                    }
+    
+                    $res = $this->login($email, $password);
+    
+                    if (!$res['success']) {
+                        $_SESSION['auth_error'] = $res['message'];
+                        header('Location: /auth');
+                        exit();
+                    }
+                    
+                    $_SESSION['user'] = $res['user'];
+                    header('Location: /');
+                    exit();
+    
+                } elseif (isset($_POST['register'])) {
+                    $username = $_POST['username'] ?? null;
+                    $email = $_POST['email'] ?? null;
+                    $password = $_POST['password'] ?? null;
+    
+                    if (!$username || !$email || !$password) {
+                        $_SESSION['auth_error'] = 'All fields are required for registration.';
+                        header('Location: /auth');
+                        exit();
+                    }
+    
+                    $res = $this->register([
+                        'username' => $username,
+                        'email' => $email,
+                        'password' => $password
+                    ]);
+    
+                    if (!$res['success']) {
+                        $_SESSION['auth_error'] = $res['message'];
+                        header('Location: /auth');
+                        exit();
+                    }
 
-         try {
-            $rawInput = file_get_contents('php://input');
-            $requestData = json_decode($rawInput, true);
-            if (isset($requestData['action']) && $requestData['action'] === 'login') {
-             
-                http_response_code(200);
-            // echo json_encode('login');
-            $res=$this->login($requestData['email'], $requestData['password']);
-
-            echo json_encode($res);
-
-              }elseif(isset($requestData['action']) && $requestData['action'] === 'register') {
-                http_response_code(200);
-                $res=$this->register([
-                    'username' => $requestData['username'],
-                    'email' => $requestData['email'],
-                    'password' => $requestData['password']
-                ]);
-                $_SESSION['user_id'] = $res['user_id'];
-                header('Location: /home');
-                exit();
-             }
-             else {
-
-                throw new \Exception("Invalid action specified");
+                    $_SESSION['auth_success'] = 'Registration successful! Please login.';
+                    header('Location: /auth');
+                    exit();
+                }
             }
-
-        }catch (\Exception $e) {
-            
-
-                http_response_code(500);  
-                echo json_encode([
-                    'error' => true,
-                    'message' => $e->getMessage()
-                ]);
-            }
-        
-
+        } catch (\Exception $e) {
+            $_SESSION['auth_error'] = $e->getMessage();
+            header('Location: /auth');
+            exit();
+        }
     }
-
-
-        
-    }
-
+    
     private function handleError($message, $statusCode = 400) {
-
-
-        http_response_code($statusCode);
-
-
-        $_SESSION['login_error'] = $message;
-
+        $_SESSION['auth_error'] = $message;
         header('Location: /auth');
         exit();
     }
