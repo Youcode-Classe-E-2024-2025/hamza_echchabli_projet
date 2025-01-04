@@ -12,6 +12,8 @@ class ProjectController {
     }
 
     public function handleRequest() {
+        header('Content-Type: application/json');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rawInput = file_get_contents('php://input');
             $requestData = json_decode($rawInput, true);
@@ -25,21 +27,12 @@ class ProjectController {
                 exit;
             }
 
-            $action = $requestData['action'];
+            $action = $requestData['action'] ?? '';
 
             try {
                 switch ($action) {
                     case 'create':
                         $this->createProject($requestData);
-                        break;
-                    case 'getProjectsByUser':
-                        $this->getProjectsByUser($requestData['user_id']);
-                        break;
-                    case 'getPublicProjects':
-                        $this->getPublicProjects();
-                        break;
-                    case 'getPrivateProjects':
-                        $this->getPrivateProjects($requestData['user_id']);
                         break;
                     case 'updateProject':
                         $this->updateProject($requestData);
@@ -48,7 +41,7 @@ class ProjectController {
                         $this->deleteProject($requestData['id']);
                         break;
                     default:
-                        throw new \Exception('Invalid action');
+                        throw new \Exception('Invalid action: ' . $action);
                 }
             } catch (\Exception $e) {
                 http_response_code(500);
@@ -79,64 +72,36 @@ class ProjectController {
             $data['state']
         );
 
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+    
+
         http_response_code(201);
         echo json_encode([
             'success' => true,
-            'message' => 'Project created successfully'
+            'message' => 'Project updated successfully'
         ]);
-    }
-
-    private function getProjectsByUser($user_id) {
-        if (empty($user_id)) {
-            throw new \Exception('User ID is required.');
-        }
-
-        $projects = $this->projectModel->getProjects($user_id);
-
-        http_response_code(200);
-        echo json_encode([
-            'success' => true,
-            'data' => $projects
-        ]);
-    }
-
-    private function getPublicProjects() {
-        $projects = $this->projectModel->getPublicProjects();
-
-        http_response_code(200);
-        echo json_encode([
-            'success' => true,
-            'data' => $projects
-        ]);
-    }
-
-    private function getPrivateProjects($user_id) {
-        if (empty($user_id)) {
-            throw new \Exception('User ID is required.');
-        }
-
-        $projects = $this->projectModel->getPrivateProjects($user_id);
-
-        http_response_code(200);
-        echo json_encode([
-            'success' => true,
-            'data' => $projects
-        ]);
+       
     }
 
     private function updateProject($data) {
-        if (!isset($data['id'], $data['name'], $data['state'])) {
-            throw new \Exception('Project ID, name, and state are required.');
+        if (!isset($data['id'], $data['state'])) {
+            throw new \Exception('Project ID and state are required.');
         }
 
-        $this->projectModel->updateProject(
+        $this->projectModel->updateProjectState(
             $data['id'],
-            $data['name'],
-            $data['description'] ?? null,
             $data['state']
         );
 
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+    
+        // Set response headers and return JSON
         http_response_code(200);
+        header('Content-Type: application/json');
         echo json_encode([
             'success' => true,
             'message' => 'Project updated successfully'
@@ -149,7 +114,11 @@ class ProjectController {
         }
 
         $this->projectModel->deleteProject($id);
-
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+    
+        header('Content-Type: application/json');
         http_response_code(200);
         echo json_encode([
             'success' => true,
@@ -157,5 +126,9 @@ class ProjectController {
         ]);
     }
 }
+
+// Initialize and handle the request
+$controller = new ProjectController();
+$controller->handleRequest();
 
 ?>

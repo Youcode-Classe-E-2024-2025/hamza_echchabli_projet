@@ -3,6 +3,7 @@ RewriteBase /
 
 # Handle API endpoints
 RewriteRule ^api/tasks$ controllers/taskController.php [L]
+RewriteRule ^project$ controllers/ProjectController.php [L]
 
 # Handle views
 RewriteRule ^kanban$ views/kanbanDisplay.php [L]

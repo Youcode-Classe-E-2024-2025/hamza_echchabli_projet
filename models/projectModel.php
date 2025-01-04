@@ -114,6 +114,16 @@ GROUP BY
         $result = DB::query($query, $params);
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    // Update project state
+    public function updateProjectState($id, $state) {
+        $query = "UPDATE projects SET state = :state WHERE id = :id";
+        $params = [
+            'id' => $id,
+            'state' => $state
+        ];
+        return DB::query($query, $params);
+    }
 }
 
 ?>

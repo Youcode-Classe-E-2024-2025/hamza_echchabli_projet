@@ -55,8 +55,15 @@ if (!isset($_SESSION['user'])) {
         echo '
         <div class="board-card">
             <div class="board-header">
-                <h2>' . htmlspecialchars($kanban['name']) . '</h2>
-                <span class="board-type">' . (!empty($kanban['type']) ? htmlspecialchars($kanban['type']) : 'N/A') . '</span>
+                <h2>' . htmlspecialchars($kanban['name'] ?? '') . '</h2>
+                <div class="board-actions">
+                    <button class="btn-state" data-project-id="' . (int)$kanban['id'] . '" data-current-state="' . htmlspecialchars($kanban['type'] ?? 'public') . '">
+                        ' . htmlspecialchars($kanban['type'] ?? 'public') . '
+                    </button>
+                    <button class="btn-delete" data-project-id="' . (int)$kanban['id'] . '">
+                        Delete
+                    </button>
+                </div>
             </div>
             <div class="board-info">
                 <div class="leader-info">
@@ -89,7 +96,8 @@ if (!isset($_SESSION['user'])) {
                 <h2>Create New Project</h2>
                 <button class="close-btn">&times;</button>
             </div>
-            <form id="newProjectForm"  method="POST" action="">
+            <form id="newProjectForm" method="POST" action="">
+                <input type="hidden" id="userId" value="<?php echo $_SESSION['user']['id']; ?>">
                 <div class="form-group">
                     <label for="projectName">Project Name</label>
                     <input name="name" type="text" id="projectName" required>
@@ -112,5 +120,6 @@ if (!isset($_SESSION['user'])) {
             </form>
         </div>
     </div>
+    <script src="js/project.js"></script>
 </body>
 </html>

@@ -281,6 +281,41 @@ h1 {
     background-color: var(--accent-hover);
 }
 
+/* Project action buttons */
+.board-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.board-actions button {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.btn-state {
+    background-color: var(--accent-color);
+    color: white;
+    border: 1px solid var(--accent-color);
+}
+
+.btn-state:hover {
+    background-color: var(--accent-hover);
+}
+
+.btn-delete {
+    background-color: transparent;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
