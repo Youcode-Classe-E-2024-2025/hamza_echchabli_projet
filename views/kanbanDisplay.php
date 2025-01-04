@@ -55,6 +55,7 @@ $taskModel = new TaskModel();
         
          <h1> project name</h1>
          <h1>Project owner</h1>
+         <button type="button">Team members</button>
     </header>
 
     <div class="kanban-board">
