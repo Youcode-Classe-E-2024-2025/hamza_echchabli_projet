@@ -242,194 +242,102 @@ function showTagModal(task) {
 }
 
 async function showAssignModal(task) {
-    try {
-        // Get current assignments
-        const response = await fetch('/CRUDTask', {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    const header = document.createElement('div');
+    header.className = 'modal-header';
+    header.innerHTML = `
+        <h2>Assign Task</h2>
+        <button class="close-btn">&times;</button>
+    `;
+    
+    const form = document.createElement('form');
+    form.innerHTML = `
+        <div class="form-group">
+            <label for="assignee" id="assigneeLabel">Assign to</label>
+            <select id="assingOne">
+                <option value="">Select team member</option>
+            </select>
+        </div>
+        <button type="submit" class="submit-btn">Assign Task</button>
+    `;
+
+    // Load team members
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'getProjectMembers',
+            project_id: projectId
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success && result.data) {
+            const assignSelect = document.getElementById('assingOne');
+            // Add team members as options
+            result.data.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.username;
+                assignSelect.appendChild(option);
+            });
+        }
+    })
+    .catch(error => console.error('Error loading team members:', error));
+    
+    modalContent.appendChild(header);
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Close button functionality
+    const closeBtn = modal.querySelector('.close-btn');
+    closeBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Click outside to close
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Handle form submission
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userId = document.getElementById('assingOne').value;
+        
+        fetch('/CRUDAssing', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                action: 'getAssignedUsers',
-                task_id: task.id
+                action: 'assignTask',
+                task_id: task.id,
+                user_id: userId
             })
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const result = await response.json();
-        const assignedUsers = result.success ? result.data : [];
-
-        // Create and show the assign modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'flex';
-
-        const content = document.createElement('div');
-        content.className = 'modal-content';
-
-        const header = document.createElement('div');
-        header.className = 'modal-header';
-        header.innerHTML = '<h2>Assign Task</h2><button class="close-btn">&times;</button>';
-
-        const assignedList = document.createElement('div');
-        assignedList.className = 'assigned-users';
-        assignedList.innerHTML = '<h3>Currently Assigned:</h3>';
-
-        if (assignedUsers.length > 0) {
-            const usersList = document.createElement('ul');
-            usersList.className = 'users-list';
-            
-            assignedUsers.forEach(user => {
-                const userItem = document.createElement('li');
-                userItem.innerHTML = `
-                    ${user.username}
-                    <button class="remove-user-btn" data-user-id="${user.id}">
-                        <i class="fas fa-minus-circle"></i>
-                    </button>
-                `;
-                usersList.appendChild(userItem);
-            });
-            
-            assignedList.appendChild(usersList);
-        } else {
-            assignedList.innerHTML += '<p>No users assigned</p>';
-        }
-
-        const form = document.createElement('form');
-        form.innerHTML = `
-            <div class="form-group">
-                <label for="assignee">Assign to</label>
-                <input type="text" id="assignee" placeholder="Enter username" required>
-            </div>
-            <button type="submit" class="submit-btn">Assign Task</button>
-        `;
-
-        content.appendChild(header);
-        content.appendChild(assignedList);
-        content.appendChild(form);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-
-        // Handle remove user clicks
-        const removeButtons = modal.querySelectorAll('.remove-user-btn');
-        removeButtons.forEach(button => {
-            button.onclick = async (e) => {
-                e.preventDefault();
-                const userId = button.dataset.userId;
-                
-                try {
-                    const response = await fetch('/CRUDTask', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'removeAssignment',
-                            task_id: task.id,
-                            user_id: userId
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    const result = await response.json();
-                    if (!result.success) {
-                        throw new Error(result.message || 'Failed to remove assignment');
-                    }
-
-                    // Show success message and refresh modal
-                    const successMessage = document.createElement('div');
-                    successMessage.className = 'alert alert-success';
-                    successMessage.textContent = 'Assignment removed successfully!';
-                    document.body.appendChild(successMessage);
-                    setTimeout(() => successMessage.remove(), 3000);
-
-                    // Close and reopen modal to refresh assignments
-                    modal.remove();
-                    showAssignModal(task);
-                } catch (error) {
-                    console.error('Error:', error);
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'alert alert-error';
-                    errorMessage.textContent = 'Error removing assignment. Please try again.';
-                    document.body.appendChild(errorMessage);
-                    setTimeout(() => errorMessage.remove(), 3000);
-                }
-            };
-        });
-
-        // Close button handler
-        const closeBtn = modal.querySelector('.close-btn');
-        closeBtn.onclick = () => {
-            modal.remove();
-        };
-
-        // Click outside to close
-        modal.onclick = (e) => {
-            if (e.target === modal) {
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
                 modal.remove();
+                loadTasks(); // Refresh tasks to show new assignment
+            } else {
+                console.error('Error assigning task:', result.message);
             }
-        };
-
-        // Form submit handler
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const assignee = document.getElementById('assignee').value;
-            
-            try {
-                const response = await fetch('/CRUDTask', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'assignTask',
-                        task_id: task.id,
-                        assignee: assignee
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const result = await response.json();
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to assign task');
-                }
-
-                // Show success message
-                const successMessage = document.createElement('div');
-                successMessage.className = 'alert alert-success';
-                successMessage.textContent = 'Task assigned successfully!';
-                document.body.appendChild(successMessage);
-                setTimeout(() => successMessage.remove(), 3000);
-
-                // Close and reopen modal to refresh assignments
-                modal.remove();
-                showAssignModal(task);
-            } catch (error) {
-                console.error('Error:', error);
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'alert alert-error';
-                errorMessage.textContent = error.message || 'Error assigning task. Please try again.';
-                document.body.appendChild(errorMessage);
-                setTimeout(() => errorMessage.remove(), 3000);
-            }
-        };
-    } catch (error) {
-        console.error('Error:', error);
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'alert alert-error';
-        errorMessage.textContent = 'Error loading assignments. Please try again.';
-        document.body.appendChild(errorMessage);
-        setTimeout(() => errorMessage.remove(), 3000);
-    }
+        })
+        .catch(error => console.error('Error:', error));
+    });
 }
 
 async function loadTasks() {
@@ -566,6 +474,216 @@ document.addEventListener('DOMContentLoaded', function() {
     const drake = initializeDragula();
     loadTasks();
 
+    // Team Members Management
+    const addMembersBtn = document.getElementById('addMembersBtn');
+    console.log('Add Members Button:', addMembersBtn);
+
+    if (addMembersBtn) {
+        addMembersBtn.onclick = function() {
+            console.log('Add Members button clicked');
+            const modal = document.getElementById('addMembersModal');
+            if (modal) {
+                modal.style.display = 'block';
+                loadCurrentMembers();
+            }
+        };
+    }
+
+    // Get the members modal
+    const addMembersModal = document.getElementById('addMembersModal');
+    if (addMembersModal) {
+        const closeBtn = addMembersModal.querySelector('.close-btn');
+        const cancelBtn = document.getElementById('cancelMembersBtn');
+        const saveBtn = document.getElementById('saveMembersBtn');
+
+        // Close button handler
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                addMembersModal.style.display = 'none';
+            };
+        }
+
+        // Cancel button handler
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                addMembersModal.style.display = 'none';
+            };
+        }
+
+        // Save button handler
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                addMembersModal.style.display = 'none';
+            };
+        }
+
+        const userSearchInput = document.getElementById('userSearchInput');
+        if (userSearchInput) {
+            userSearchInput.addEventListener('input', debounce(function() {
+                const searchTerm = this.value.trim();
+                if (searchTerm.length < 2) {
+                    const searchResults = document.getElementById('searchResults');
+                    if (searchResults) {
+                        searchResults.innerHTML = '';
+                    }
+                    return;
+                }
+                searchUsers(searchTerm);
+            }, 300));
+        }
+    }
+
+    // Search users function
+    function searchUsers(term) {
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'searchUsers',
+                term: term
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.data) {
+                const searchResults = document.getElementById('searchResults');
+                if (!searchResults) return;
+
+                searchResults.innerHTML = '';
+                result.data.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.className = 'user-result';
+                    userElement.innerHTML = `
+                        <span>${user.username}</span>
+                        <button class="add-user-btn" data-user-id="${user.id}">Add</button>
+                    `;
+                    searchResults.appendChild(userElement);
+                });
+
+                // Add click handlers for add buttons
+                searchResults.querySelectorAll('.add-user-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const userId = this.dataset.userId;
+                        addMemberToProject(userId);
+                    });
+                });
+            } else {
+                console.error('Error searching users:', result.message);
+            }
+        })
+        .catch(error => console.error('Error searching users:', error));
+    }
+
+    // Add member to project
+    function addMemberToProject(userId) {
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'addMember',
+                project_id: projectId,
+                user_id: userId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadCurrentMembers();
+                const userSearchInput = document.getElementById('userSearchInput');
+                const searchResults = document.getElementById('searchResults');
+                if (userSearchInput) userSearchInput.value = '';
+                if (searchResults) searchResults.innerHTML = '';
+            } else {
+                console.error('Error adding member:', result.message);
+            }
+        })
+        .catch(error => console.error('Error adding member:', error));
+    }
+
+    // Load current team members
+    function loadCurrentMembers() {
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'getProjectMembers',
+                project_id: projectId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.data) {
+                const teamMembersList = document.getElementById('teamMembersList');
+                if (!teamMembersList) return;
+
+                teamMembersList.innerHTML = '';
+                result.data.forEach(member => {
+                    const memberElement = document.createElement('div');
+                    memberElement.className = 'team-member';
+                    memberElement.innerHTML = `
+                        <span>${member.username}</span>
+                        <button class="remove-member-btn" data-user-id="${member.id}">Remove</button>
+                    `;
+                    teamMembersList.appendChild(memberElement);
+                });
+
+                // Add click handlers for remove buttons
+                teamMembersList.querySelectorAll('.remove-member-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const userId = this.dataset.userId;
+                        removeMemberFromProject(userId);
+                    });
+                });
+            } else {
+                console.error('Error loading members:', result.message);
+            }
+        })
+        .catch(error => console.error('Error loading members:', error));
+    }
+
+    // Remove member from project
+    function removeMemberFromProject(userId) {
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'removeMember',
+                project_id: projectId,
+                user_id: userId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadCurrentMembers();
+            } else {
+                console.error('Error removing member:', result.message);
+            }
+        })
+        .catch(error => console.error('Error removing member:', error));
+    }
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func.apply(this, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     // Modal functionality
     const modal = document.getElementById('taskModal');
     const addButtons = document.querySelectorAll('.add-task-btn');
@@ -574,12 +692,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show modal with column state
     addButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            modal.style.display = 'flex';
-            // Store the column state for when we create the task
-            taskForm.dataset.column = button.dataset.column;
+        button.addEventListener('click', function() {
+            const column = this.dataset.column;
+            modal.style.display = 'block';
+            currentColumn = column;
+            
+            // Load team members for assignment
+            loadTeamMembersForAssignment();
         });
     });
+
+    // Load team members for task assignment
+    function loadTeamMembersForAssignment() {
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'getProjectMembers',
+                project_id: projectId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.data) {
+                const assigneeSelect = document.getElementById('assignee');
+                if (!assigneeSelect) return;
+
+                // Clear existing options except the first one
+                while (assigneeSelect.options.length > 1) {
+                    assigneeSelect.remove(1);
+                }
+
+                // Add team members as options
+                result.data.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = member.username;
+                    assigneeSelect.appendChild(option);
+                });
+            } else {
+                console.error('Error loading team members for assignment:', result.message);
+            }
+        })
+        .catch(error => console.error('Error loading team members for assignment:', error));
+    }
 
     // Close modal
     closeBtn.addEventListener('click', () => {
@@ -595,42 +753,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle form submission
-    taskForm.addEventListener('submit', async (e) => {
+    taskForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const column = taskForm.dataset.column;
-        let state = 'To Do'; // Default state
-
-        // Map column to state
-        switch(column) {
-            case 'inprogress':
-                state = 'In Progress';
-                break;
-            case 'review':
-                state = 'Review';
-                break;
-            case 'done':
-                state = 'Done';
-                break;
-        }
-
-        const formData = {
-            action: 'create',
-            project_id: projectId,
+        const taskData = {
             name: document.getElementById('taskName').value,
             description: document.getElementById('taskDescription').value,
             deadline: document.getElementById('taskDeadline').value,
             tag: document.getElementById('taskTag').value,
-            state: state
+            assignee_id: document.getElementById('assignee').value,
+            column: currentColumn,
+            project_id: projectId
         };
 
         try {
-            const response = await fetch('/CRUDTask', {
+            const response = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    action: 'create',
+                    project_id: projectId,
+                    name: taskData.name,
+                    description: taskData.description,
+                    deadline: taskData.deadline,
+                    tag: taskData.tag,
+                    assignee_id: taskData.assignee_id,
+                    state: taskData.column
+                })
             });
 
             if (!response.ok) {
@@ -638,30 +789,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const result = await response.json();
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to create task');
+            
+            if (result.success) {
+                // Clear form
+                taskForm.reset();
+                // Close modal
+                modal.style.display = 'none';
+                // Reload tasks
+                loadTasks();
+            } else {
+                console.error('Error creating task:', result.message);
             }
-
-            // Reset form and close modal
-            taskForm.reset();
-            modal.style.display = 'none';
-
-            // Show success message
-            const successMessage = document.createElement('div');
-            successMessage.className = 'alert alert-success';
-            successMessage.textContent = 'Task created successfully!';
-            document.body.appendChild(successMessage);
-            setTimeout(() => successMessage.remove(), 3000);
-
-            // Reload tasks to show the new task
-            loadTasks();
         } catch (error) {
             console.error('Error:', error);
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'alert alert-error';
-            errorMessage.textContent = 'Error creating task. Please try again.';
-            document.body.appendChild(errorMessage);
-            setTimeout(() => errorMessage.remove(), 3000);
         }
     });
 });

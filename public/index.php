@@ -4,7 +4,6 @@
 require_once  '../core/autoloader.php';
 require_once '../core/router.php';
 
-
 // Start the session
 session_start();
 
@@ -55,6 +54,18 @@ $router->addRoute('POST', 'CRUDAssing', function() {
 $router->addRoute('GET', 'logout', function() {
     require_once '../controllers/logout.php';
 });
+
+use controllers\ProjectController;
+use controllers\AuthController;
+use controllers\TaskController;
+use controllers\MemberController;
+
+// Member management routes
+$router->addRoute('POST', 'api/users', function() {
+    $controller = new MemberController();
+    $controller->handleRequest();
+});
+
 
 // Dispatch the request
 $router->dispatch();

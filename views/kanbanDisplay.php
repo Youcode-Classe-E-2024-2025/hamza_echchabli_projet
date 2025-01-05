@@ -52,10 +52,9 @@ $taskModel = new TaskModel();
     </nav>
 
     <header>
-        
-         <h1> project name</h1>
-         <h1>Project owner</h1>
-         <button type="button">Team members</button>
+        <h1>Project name</h1>
+        <h1>Project owner</h1>
+        <button type="button" id="addMembersBtn">Team members</button>
     </header>
 
     <div class="kanban-board">
@@ -123,8 +122,38 @@ $taskModel = new TaskModel();
                         <option value="Testing">Testing</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="assignee">Assign to</label>
+                    <select id="assignee" required>
+                        <option value="">Select team member</option>
+                    </select>
+                </div>
                 <button type="submit">Create Task</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Add Members Modal -->
+    <div id="addMembersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Team Members</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-section">
+                    <input type="text" id="userSearchInput" placeholder="Search users...">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+                <div class="current-members">
+                    <h3>Current Team Members</h3>
+                    <div id="teamMembersList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelMembersBtn">Cancel</button>
+                    <button type="button" class="primary-btn" id="saveMembersBtn">Save Changes</button>
+                </div>
+            </div>
         </div>
     </div>
 
