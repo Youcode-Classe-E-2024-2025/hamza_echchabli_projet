@@ -27,6 +27,7 @@ if (!isset($_SESSION['user'])) {
         <div class="nav-links">
             <a href="/" > Projects</a>
             <a href="/myproject" class="active">My Projects</a>
+            <a href="/mytasks">My Tasks</a>
             <?php echo $_SESSION['user']['username']; ?>
            
             <div class="nav-right">
@@ -68,7 +69,9 @@ if (!isset($_SESSION['user'])) {
             <div class="board-info">
                 <div class="leader-info">
                     <div class="leader-details">
-                        <span class="leader-name">User ID: ' . htmlspecialchars($kanban['user_id']) . '</span>
+                        <span class="leader-name">User ID: ' . htmlspecialchars($kanban['username']) . '</span>
+                        <span class="leader-name" style="display: none;">User ID: ' . htmlspecialchars($kanban['user_id']) . '</span>
+                       
                         <span class="leader-role">Project Lead</span>
                     </div>
                 </div>

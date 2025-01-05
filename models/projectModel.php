@@ -62,10 +62,13 @@ class ProjectModel {
     p.user_id,
     p.state,
     p.type,
+    u.username ,
     COUNT(DISTINCT t.id) AS task_count,
     COUNT(DISTINCT at.user_id) AS member_count
 FROM 
     projects p
+INNER JOIN 
+    users u ON p.user_id = u.id
 LEFT JOIN 
     tasks t ON t.project_id = p.id
 LEFT JOIN 
@@ -73,7 +76,7 @@ LEFT JOIN
 WHERE 
     p.state = 'public'
 GROUP BY 
-    p.id, p.name, p.description, p.user_id, p.state, p.type;
+    p.id, p.name, p.description, p.user_id, p.state, p.type , u.username;
 
         ";
         $result = DB::query($query);
@@ -97,10 +100,13 @@ GROUP BY
                 p.user_id,
                 p.state,
                 p.type,
+                u.username ,
                 COUNT(DISTINCT t.id) AS task_count,
                 COUNT(DISTINCT at.user_id) AS member_count
             FROM 
                 projects p
+            INNER JOIN 
+               users u ON p.user_id = u.id
             LEFT JOIN 
                 tasks t ON t.project_id = p.id
             LEFT JOIN 
@@ -108,11 +114,52 @@ GROUP BY
             WHERE 
                 p.user_id = :user_id
             GROUP BY 
-                p.id, p.name, p.description, p.user_id, p.state, p.type
+                p.id, p.name, p.description, p.user_id, p.state, p.type , u.username
         ";
         $params = ['user_id' => $user_id];
         $result = DB::query($query, $params);
         return $result->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getProjectsWithAssignedTasks($user_id) {
+        $query = "
+            SELECT DISTINCT
+    p.*,
+    u.username ,
+    (SELECT COUNT(*) 
+     FROM tasks 
+     WHERE project_id = p.id 
+       AND id IN (SELECT task_id FROM assigntasks WHERE user_id = :user_id)) AS task_count
+FROM 
+    projects p
+INNER JOIN 
+    users u ON p.user_id = u.id
+WHERE 
+    EXISTS (
+        SELECT 1
+        FROM tasks t
+        INNER JOIN assigntasks a ON t.id = a.task_id
+        WHERE t.project_id = p.id
+          AND a.user_id = :user_id
+    );
+
+
+
+        ";
+        
+        // Debug: Print the query and user_id
+        error_log("Query: " . $query);
+        error_log("User ID: " . $user_id);
+        
+        $params = ['user_id' => $user_id];
+        $result = DB::query($query, $params);
+        
+        $projects = $result->fetchAll(\PDO::FETCH_ASSOC);
+        
+        // Debug: Print the number of projects found
+        error_log("Projects found: " . count($projects));
+        
+        return $projects;
     }
 
     // Update project state

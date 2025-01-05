@@ -28,6 +28,10 @@ $router->addRoute('GET', 'myproject', function() {
     require_once '../views/myproject.php';
 });
 
+$router->addRoute('GET', 'mytasks', function() {
+    require_once '../views/myTasks.php';
+});
+
 $router->addRoute('POST', 'handelauth', function() {
     $userController = new controllers\UserController();
     $userController->handleRequests();

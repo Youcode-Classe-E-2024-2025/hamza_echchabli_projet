@@ -18,6 +18,7 @@
             <a href="/" class="active ML_VV"> Projects</a>
             <?php if (isset($_SESSION['user'])): ?>
                 <a href="/myproject">My Projects</a>
+                <a href="/mytasks">My Tasks</a>
                 <span><?php echo $_SESSION['user']['username']; ?></span>
             <?php endif; ?>
             
@@ -71,7 +72,8 @@ foreach ($kanbans as $kanban) {
         <div class="board-info">
             <div class="leader-info">
                 <div class="leader-details">
-                    <span class="leader-name">User ID: ' . htmlspecialchars($kanban['user_id']) . '</span>
+                <span class="leader-name" style="display: none;">User ID: ' . htmlspecialchars($kanban['user_id']) . '</span>
+                    <span class="leader-name">User ID: ' . htmlspecialchars($kanban['username']) . '</span>
                     <span class="leader-role">Project Lead</span>
                 </div>
             </div>
@@ -85,7 +87,7 @@ foreach ($kanbans as $kanban) {
                     <span class="stat-label">Members</span>
                 </div>
             </div>
-            <a href="kanban?id=' . htmlspecialchars($kanban['id']) . '" class="board-link">View Tasks</a>
+            <a href="" class="board-link">Ask to join</a>
         </div>
     </div>';
 }
@@ -130,4 +132,18 @@ foreach ($kanbans as $kanban) {
 
     
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable dragging on board cards
+    document.querySelectorAll('.board-card').forEach(card => {
+        card.draggable = false;
+        
+        // Prevent dragstart event
+        card.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+    });
+});
+</script>
 </html>
