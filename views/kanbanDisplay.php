@@ -157,6 +157,30 @@ $taskModel = new TaskModel();
         </div>
     </div>
 
+    <div id="addMembersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Team Members</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-section">
+                    <input type="text" id="userSearchInput" placeholder="Search users...">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+                <div class="current-members">
+                    <h3>Current Team Members</h3>
+                    <div id="teamMembersList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelMembersBtn">Cancel</button>
+                    <button type="button" class="primary-btn" id="saveMembersBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // Store project ID for JavaScript use
         const projectId = <?php echo json_encode($project_id); ?>;

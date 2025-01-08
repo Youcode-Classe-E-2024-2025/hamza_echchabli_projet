@@ -4,15 +4,15 @@ namespace controllers;
 
 use models\TaskModel;
 use models\AssignTasksModel;
+use models\RolePerModel;
 
-/**
- * TaskController handles task-related requests.
- */
 class TaskController {
     private $taskModel;
+    private $RP;
 
     public function __construct() {
         $this->taskModel = new TaskModel();
+        $this->RP = new RolePerModel();
     }
 
     /**
@@ -35,8 +35,16 @@ class TaskController {
 
             switch ($action) {
                 case 'create':
+                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'create')) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'success' => false,
+                           ]);
+                        return;
+                    }
+
                     $this->createTask($requestData);
-                    break;
+                    break; 
                 case 'getTasksByProject':
                     $projectId = $requestData['project_id'] ?? null;
                     $this->getTasksByProject($projectId);
@@ -45,12 +53,36 @@ class TaskController {
                     $this->getTasksByState($requestData['state']);
                     break;
                 case 'updateTask':
+                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'Edit')) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'success' => false,
+                           
+                        ]);
+                        return;
+                    }
                     $this->updateTask($requestData);
                     break;
                 case 'deleteTask':
+                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'],'delete')) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'success' => false,
+                            
+                        ]);
+                        return;
+                    }
                     $this->deleteTask($requestData['id']);
                     break;
                 case 'assignTask':
+                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'],'assign')) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'success' => false,
+                            
+                        ]);
+                        return;
+                    }
                     $this->assignTask($requestData);
                     break;
                 case 'getAssignedUsers':

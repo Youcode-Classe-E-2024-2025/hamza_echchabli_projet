@@ -95,10 +95,106 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+// async function deleteTask(taskId) {
+//     if (!confirm('Are you sure you want to delete this task?')) {
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch('/CRUDTask', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//                 action: 'deleteTask',
+//                 id: taskId
+//             })
+//         });
+
+//         if (!response.ok) {
+//             throw new Error('Network response was not ok');
+//         }
+
+//         const result = await response.json();
+//         if (!result.success) {
+//             throw new Error(result.message || 'Failed to delete task');
+//         }
+
+//         // Show success message
+//         const successMessage = document.createElement('div');
+//         successMessage.className = 'alert alert-success';
+//         successMessage.textContent = 'Task deleted successfully!';
+//         document.body.appendChild(successMessage);
+//         setTimeout(() => successMessage.remove(), 3000);
+
+//         // Reload tasks
+//         loadTasks();
+//     } catch (error) {
+//         console.error('Error:', error);
+//         const errorMessage = document.createElement('div');
+//         errorMessage.className = 'alert alert-error';
+//         errorMessage.textContent = 'Error deleting task. Please try again.';
+//         document.body.appendChild(errorMessage);
+//         setTimeout(() => errorMessage.remove(), 3000);
+//     }
+// }
+
+// async function deleteTask(taskId) {
+//     if (!confirm('Are you sure you want to delete this task?')) {
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch('/CRUDTask', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//                 action: 'deleteTask',
+//                 id: taskId
+//             })
+//         });
+
+//         if (response.status === 403) {
+//             const result = await response.json();
+//             const notAllowedMessage = document.createElement('div');
+//             successMessage.className = 'alert alert-success';
+//             successMessage.textContent = 'you dont have the permission to delete a task!';
+//             document.body.appendChild(successMessage);
+//             setTimeout(() => successMessage.remove(), 3000);
+//             console.error('Error creating task:');
+//             return;
+//         }
+
+//         if (!response.ok) {
+//             throw new Error(`Error ${response.status}: ${response.statusText}`);
+//         }
+
+//         const result = await response.json();
+
+//         if (!result.success) {
+//             throw new Error(result.message || 'Failed to delete task');
+//         }
+
+     
+//             const successMessage = document.createElement('div');
+//             successMessage.className = 'alert alert-success';
+//             successMessage.textContent = 'the task is deleted';
+//             document.body.appendChild(successMessage);
+//             setTimeout(() => successMessage.remove(), 3000);
+           
+           
+//         loadTasks(); // Reload tasks after successful deletion
+//     } catch (error) {
+//         console.error('Error:', error);
+       
+//     }
+// }
+
 async function deleteTask(taskId) {
-    if (!confirm('Are you sure you want to delete this task?')) {
-        return;
-    }
+   
 
     try {
         const response = await fetch('/CRUDTask', {
@@ -111,34 +207,48 @@ async function deleteTask(taskId) {
                 id: taskId
             })
         });
+        // console.log(response.status);
+        
+
+        if (response.status === 403){
+            
+            
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'alert alert-error'; // Updated class for an error
+            errorMessage.textContent = 'You don’t have the permission to delete this task!';
+            document.body.appendChild(errorMessage);
+            setTimeout(() => errorMessage.remove(), 3000);
+            return;
+        }
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
         const result = await response.json();
+
         if (!result.success) {
             throw new Error(result.message || 'Failed to delete task');
         }
 
-        // Show success message
         const successMessage = document.createElement('div');
-        successMessage.className = 'alert alert-success';
-        successMessage.textContent = 'Task deleted successfully!';
+        successMessage.className = 'alert alert-success'; // Success alert
+        successMessage.textContent = 'The task has been deleted successfully!';
         document.body.appendChild(successMessage);
         setTimeout(() => successMessage.remove(), 3000);
 
-        // Reload tasks
-        loadTasks();
+        loadTasks(); // Reload tasks after successful deletion
     } catch (error) {
         console.error('Error:', error);
         const errorMessage = document.createElement('div');
-        errorMessage.className = 'alert alert-error';
-        errorMessage.textContent = 'Error deleting task. Please try again.';
+        errorMessage.className = 'alert alert-error'; // Updated class for an error
+        errorMessage.textContent = 'An error occurred while deleting the task. Please try again.';
         document.body.appendChild(errorMessage);
         setTimeout(() => errorMessage.remove(), 3000);
     }
 }
+
+
 
 function showTagModal(task) {
     // Create and show the tag modal
@@ -333,7 +443,7 @@ async function showAssignModal(task) {
                 modal.remove();
                 loadTasks(); // Refresh tasks to show new assignment
             } else {
-                console.error('Error assigning task:', result.message);
+                console.error('Error assigning task:');
             }
         })
         .catch(error => console.error('Error:', error));
@@ -570,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 });
             } else {
-                console.error('Error searching users:', result.message);
+                console.error('Error searching users:');
             }
         })
         .catch(error => console.error('Error searching users:', error));
@@ -598,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (userSearchInput) userSearchInput.value = '';
                 if (searchResults) searchResults.innerHTML = '';
             } else {
-                console.error('Error adding member:', result.message);
+                console.error('Error adding member:');
             }
         })
         .catch(error => console.error('Error adding member:', error));
@@ -641,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 });
             } else {
-                console.error('Error loading members:', result.message);
+                console.error('Error loading members:');
             }
         })
         .catch(error => console.error('Error loading members:', error));
@@ -665,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 loadCurrentMembers();
             } else {
-                console.error('Error removing member:', result.message);
+                console.error('Error removing member:');
             }
         })
         .catch(error => console.error('Error removing member:', error));
@@ -733,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     assigneeSelect.appendChild(option);
                 });
             } else {
-                console.error('Error loading team members for assignment:', result.message);
+                console.error('Error loading team members for assignment:');
             }
         })
         .catch(error => console.error('Error loading team members for assignment:', error));
@@ -767,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
-            const response = await fetch('/api/tasks', {
+            const response = await fetch('/CRUDTask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -784,10 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
+           
             const result = await response.json();
             
             if (result.success) {
@@ -797,11 +904,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.display = 'none';
                 // Reload tasks
                 loadTasks();
-            } else {
-                console.error('Error creating task:', result.message);
+            } else if(response.status === 403){
+
+                const successMessage = document.createElement('div');
+            successMessage.className = 'alert alert-error';
+            successMessage.textContent = 'you dont have the permission to create a task!';
+            document.body.appendChild(successMessage);
+            setTimeout(() => successMessage.remove(), 3000);
+
+            }else{
+                console.error('Error creating task:');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('EPPrror:', error);
         }
     });
 });

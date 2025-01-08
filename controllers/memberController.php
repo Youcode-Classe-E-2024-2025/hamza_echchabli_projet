@@ -3,11 +3,15 @@ namespace controllers;
 
 use models\MemberModel;
 
+use models\RolePerModel;
+
 class MemberController {
     private $memberModel;
+    private $RP;
 
     public function __construct() {
         $this->memberModel = new MemberModel();
+        $this->RP = new RolePerModel();
     }
 
     public function handleRequest() {
@@ -34,9 +38,29 @@ class MemberController {
                         $this->searchUsers($requestData);
                         break;
                     case 'addMember':
+                        
+                        if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'addMembers')) {
+                            http_response_code(403);
+                            header('Content-Type: application/json'); // Ensure JSON response
+                            echo json_encode([
+                                'success' => false,
+                                
+                            ]);
+                            exit;
+                        }
+                        
                         $this->addMember($requestData);
                         break;
                     case 'removeMember':
+                        if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'removeMember')) {
+                            http_response_code(403);
+                            header('Content-Type: application/json'); // Ensure JSON response
+                            echo json_encode([
+                                'success' => false,
+                                
+                            ]);
+                            exit;
+                        }
                         $this->removeMember($requestData);
                         break;
                     case 'getProjectMembers':
