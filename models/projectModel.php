@@ -171,6 +171,55 @@ WHERE
         ];
         return DB::query($query, $params);
     }
+
+    // public function checkAdmin($user_id, $project_id)
+    // {
+    //     $query = 'SELECT user_id FROM projects WHERE id = :project_id AND user_id = :user_id';
+    //     $params = [
+    //         'project_id' => $project_id,
+    //         'user_id' => $user_id
+    //     ];
+
+        
+    //     $res = DB::query($query, $params);
+    
+        
+    //     return $res->fetch(\PDO::FETCH_ASSOC) !== false;
+    // }
+    
+
+
+    public function checkAdmin($user_id, $project_id)
+    {
+        // Query to fetch user_id for the given project_id
+        $query = 'SELECT P.user_id FROM projects P WHERE P.id = :project_id';
+        $params = [
+            'project_id' => $project_id
+        ];
+    
+        // Execute the query and fetch the first matching row
+        $res = DB::query($query, $params);
+        $row = $res->fetch(\PDO::FETCH_ASSOC);  // Get the first row
+    
+        // If no row is found, return false
+        // if ($row === false) {
+        //     return false;
+        // }
+    
+        // Compare the user_id from the database with the passed user_id
+        if ($user_id == $row['user_id']) {
+            return true;
+        }
+    
+        return false;
+    }
+    
+
+
+
+
+
+
 }
 
 ?>

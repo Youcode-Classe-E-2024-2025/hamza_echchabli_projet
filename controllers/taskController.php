@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use models\ProjectModel;
 use models\TaskModel;
 use models\AssignTasksModel;
 use models\RolePerModel;
@@ -10,9 +11,13 @@ class TaskController {
     private $taskModel;
     private $RP;
 
+
+    private $PA;
+
     public function __construct() {
         $this->taskModel = new TaskModel();
         $this->RP = new RolePerModel();
+        $this->PA = new ProjectModel();
     }
 
     /**
@@ -35,16 +40,28 @@ class TaskController {
 
             switch ($action) {
                 case 'create':
-                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'create')) {
+                    $userId = $_SESSION['user']['id'];
+                    $projectId = $requestData['project_id'];
+                
+                    // Vérifie si l'utilisateur est administrateur.
+                    $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                
+                    // Vérifie si l'utilisateur a la permission de créer une tâche.
+                    $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'create');
+                
+                    // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                    if (!$isAdmin && !$hasCreatePermission) {
                         http_response_code(403);
                         echo json_encode([
                             'success' => false,
-                           ]);
+                        ]);
                         return;
                     }
-
+                
+                    // Crée la tâche si les vérifications sont passées.
                     $this->createTask($requestData);
-                    break; 
+                    break;
+                
                 case 'getTasksByProject':
                     $projectId = $requestData['project_id'] ?? null;
                     $this->getTasksByProject($projectId);
@@ -53,18 +70,18 @@ class TaskController {
                     $this->getTasksByState($requestData['state']);
                     break;
                 case 'updateTask':
-                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'Edit')) {
-                        http_response_code(403);
-                        echo json_encode([
-                            'success' => false,
-                           
-                        ]);
-                        return;
-                    }
-                    $this->updateTask($requestData);
-                    break;
-                case 'deleteTask':
-                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'],'delete')) {
+
+                      $userId = $_SESSION['user']['id'];
+                    $projectId = $requestData['project_id'];
+                
+                    // Vérifie si l'utilisateur est administrateur.
+                    $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                
+                    // Vérifie si l'utilisateur a la permission de créer une tâche.
+                    $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'Edit');
+                
+                    // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                    if (!$isAdmin && !$hasCreatePermission) {
                         http_response_code(403);
                         echo json_encode([
                             'success' => false,
@@ -72,10 +89,43 @@ class TaskController {
                         ]);
                         return;
                     }
+                    $this->updateTask($requestData);
+                    break;
+                case 'deleteTask':
+                    $userId = $_SESSION['user']['id'];
+                    $projectId = $requestData['project_id'];
+                
+                    // Vérifie si l'utilisateur est administrateur.
+                    $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                
+                    // Vérifie si l'utilisateur a la permission de créer une tâche.
+                    $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'delete');
+                
+                    // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                    if (!$isAdmin && !$hasCreatePermission) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'success' => false,
+                        ]);
+                        return;
+                    }
                     $this->deleteTask($requestData['id']);
+
+
+
                     break;
                 case 'assignTask':
-                    if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'],'assign')) {
+                    $userId = $_SESSION['user']['id'];
+                    $projectId = $requestData['project_id'];
+                
+                    // Vérifie si l'utilisateur est administrateur.
+                    $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                
+                    // Vérifie si l'utilisateur a la permission de créer une tâche.
+                    $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'assign');
+                
+                    // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                    if (!$isAdmin && !$hasCreatePermission) {
                         http_response_code(403);
                         echo json_encode([
                             'success' => false,
@@ -256,7 +306,7 @@ class TaskController {
         http_response_code(200);
         echo json_encode([
             'success' => true,
-            'message' => 'Task deleted successfully'
+           
         ]);
     }
 
@@ -276,7 +326,7 @@ class TaskController {
             http_response_code(200);
             echo json_encode([
                 'success' => true,
-                'message' => 'Task assigned successfully'
+                
             ]);
         } catch (\Exception $e) {
             http_response_code(500);

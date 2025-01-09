@@ -204,6 +204,7 @@ async function deleteTask(taskId) {
             },
             body: JSON.stringify({
                 action: 'deleteTask',
+                project_id: projectId,
                 id: taskId
             })
         });
@@ -225,11 +226,9 @@ async function deleteTask(taskId) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        
 
-        if (!result.success) {
-            throw new Error(result.message || 'Failed to delete task');
-        }
+        
 
         const successMessage = document.createElement('div');
         successMessage.className = 'alert alert-success'; // Success alert

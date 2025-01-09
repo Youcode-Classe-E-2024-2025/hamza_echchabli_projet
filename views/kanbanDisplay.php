@@ -13,6 +13,8 @@ if (!$project_id) {
 // Get project details
 $projectModel = new ProjectModel();
 $taskModel = new TaskModel();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -180,6 +182,7 @@ $taskModel = new TaskModel();
         </div>
     </div>
 
+   
 
     <script>
         // Store project ID for JavaScript use

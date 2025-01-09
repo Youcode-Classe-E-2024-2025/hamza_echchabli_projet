@@ -4,14 +4,18 @@ namespace controllers;
 use models\MemberModel;
 
 use models\RolePerModel;
+use models\ProjectModel;
 
 class MemberController {
     private $memberModel;
     private $RP;
 
+    private $PA;
+
     public function __construct() {
         $this->memberModel = new MemberModel();
         $this->RP = new RolePerModel();
+        $this->PA = new ProjectModel();
     }
 
     public function handleRequest() {
@@ -39,7 +43,7 @@ class MemberController {
                         break;
                     case 'addMember':
                         
-                        if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'addMembers')) {
+                        if (!$this->PA->checkAdmin($_SESSION['user']['id'], $requestData['project_id']) || !$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'addMembers')) {
                             http_response_code(403);
                             header('Content-Type: application/json'); // Ensure JSON response
                             echo json_encode([
@@ -52,7 +56,7 @@ class MemberController {
                         $this->addMember($requestData);
                         break;
                     case 'removeMember':
-                        if (!$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'removeMember')) {
+                        if (!$this->PA->checkAdmin($_SESSION['user']['id'], $requestData['project_id']) || !$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'removeMember')) {
                             http_response_code(403);
                             header('Content-Type: application/json'); // Ensure JSON response
                             echo json_encode([
