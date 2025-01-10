@@ -127,6 +127,10 @@ $taskModel = new TaskModel();
             border-radius: 4px;
             cursor: pointer;
         }
+        .WhiteColor{
+            color: white;
+            text-decoration: none;
+        }
 
         .permission-group label:hover {
             background-color: var(--background-hover);
@@ -147,6 +151,7 @@ $taskModel = new TaskModel();
             <a href="/">Projects</a>
             <?php if (isset($_SESSION['user'])): ?>
                 <a href="/myproject">My Projects</a>
+                <a href="/mytasks">My Tasks</a>
                 <span><?php echo $_SESSION['user']['username']; ?></span>
             <?php endif; ?>
             <div class="nav-right">
@@ -166,7 +171,8 @@ $taskModel = new TaskModel();
     <header>
         <h1>Project name</h1>
         <h1>Project owner</h1>
-        <button type="button" id="addMembersBtn">Team members</button>
+        <!-- id="addMembersBtn"> -->
+        <a  href="#manager" type="button" class="WhiteColor"> Manage Team </a>
     </header>
 
     <div class="kanban-board">
@@ -343,7 +349,7 @@ $taskModel = new TaskModel();
         </div>
     </div>
 
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="manager">
                 <section id="left" class="sectStyle">
                     <!-- Team Members Section -->
                     <div id="teamMembers" class="dashboard-section">
