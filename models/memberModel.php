@@ -46,6 +46,32 @@ class MemberModel {
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function editRole($projectId , $userId , $roleId) {
+        $query = "
+            UPDATE members
+            SET role_id = :role_id
+            WHERE project_id = :project_id AND user_id = :user_id
+            RETURNING role_id
+        ";
+        $params = ['role_id' => $roleId,'project_id' => $projectId , 'user_id' => $userId];
+        
+        $result = DB::query($query, $params);
+        return $result->fetch() ;
+    }
+
+    public function getRole($name) {
+        $query = "
+            SELECT id
+            FROM roles
+            WHERE name = :name
+        ";
+        $params = ['name' => $name];
+        
+        $result = DB::query($query, $params);
+        return $result->fetch() ;
+    }
+
+
     public function searchUsers($term) {
         $query = "
             SELECT id, username

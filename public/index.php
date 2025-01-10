@@ -59,10 +59,17 @@ use controllers\ProjectController;
 use controllers\AuthController;
 use controllers\TaskController;
 use controllers\MemberController;
+use controllers\RolesController;
 
 // Member management routes
 $router->addRoute('POST', 'api/users', function() {
     $controller = new MemberController();
+    $controller->handleRequest();
+});
+
+// Role management routes
+$router->addRoute('POST', 'roles', function() {
+    $controller = new RolesController();
     $controller->handleRequest();
 });
 

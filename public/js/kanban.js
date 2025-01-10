@@ -95,103 +95,6 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// async function deleteTask(taskId) {
-//     if (!confirm('Are you sure you want to delete this task?')) {
-//         return;
-//     }
-
-//     try {
-//         const response = await fetch('/CRUDTask', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//                 action: 'deleteTask',
-//                 id: taskId
-//             })
-//         });
-
-//         if (!response.ok) {
-//             throw new Error('Network response was not ok');
-//         }
-
-//         const result = await response.json();
-//         if (!result.success) {
-//             throw new Error(result.message || 'Failed to delete task');
-//         }
-
-//         // Show success message
-//         const successMessage = document.createElement('div');
-//         successMessage.className = 'alert alert-success';
-//         successMessage.textContent = 'Task deleted successfully!';
-//         document.body.appendChild(successMessage);
-//         setTimeout(() => successMessage.remove(), 3000);
-
-//         // Reload tasks
-//         loadTasks();
-//     } catch (error) {
-//         console.error('Error:', error);
-//         const errorMessage = document.createElement('div');
-//         errorMessage.className = 'alert alert-error';
-//         errorMessage.textContent = 'Error deleting task. Please try again.';
-//         document.body.appendChild(errorMessage);
-//         setTimeout(() => errorMessage.remove(), 3000);
-//     }
-// }
-
-// async function deleteTask(taskId) {
-//     if (!confirm('Are you sure you want to delete this task?')) {
-//         return;
-//     }
-
-//     try {
-//         const response = await fetch('/CRUDTask', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//                 action: 'deleteTask',
-//                 id: taskId
-//             })
-//         });
-
-//         if (response.status === 403) {
-//             const result = await response.json();
-//             const notAllowedMessage = document.createElement('div');
-//             successMessage.className = 'alert alert-success';
-//             successMessage.textContent = 'you dont have the permission to delete a task!';
-//             document.body.appendChild(successMessage);
-//             setTimeout(() => successMessage.remove(), 3000);
-//             console.error('Error creating task:');
-//             return;
-//         }
-
-//         if (!response.ok) {
-//             throw new Error(`Error ${response.status}: ${response.statusText}`);
-//         }
-
-//         const result = await response.json();
-
-//         if (!result.success) {
-//             throw new Error(result.message || 'Failed to delete task');
-//         }
-
-     
-//             const successMessage = document.createElement('div');
-//             successMessage.className = 'alert alert-success';
-//             successMessage.textContent = 'the task is deleted';
-//             document.body.appendChild(successMessage);
-//             setTimeout(() => successMessage.remove(), 3000);
-           
-           
-//         loadTasks(); // Reload tasks after successful deletion
-//     } catch (error) {
-//         console.error('Error:', error);
-       
-//     }
-// }
 
 async function deleteTask(taskId) {
    
@@ -226,9 +129,8 @@ async function deleteTask(taskId) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        
-
-        
+        // console.log(response.json());
+        // const result = await response.json();
 
         const successMessage = document.createElement('div');
         successMessage.className = 'alert alert-success'; // Success alert
@@ -870,7 +772,6 @@ document.addEventListener('DOMContentLoaded', function() {
             description: document.getElementById('taskDescription').value,
             deadline: document.getElementById('taskDeadline').value,
             tag: document.getElementById('taskTag').value,
-            assignee_id: document.getElementById('assignee').value,
             column: currentColumn,
             project_id: projectId
         };
@@ -918,6 +819,27 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('EPPrror:', error);
         }
     });
+
+    // Role Modal Cancel Button
+    const roleModal = document.getElementById('roleModal');
+    const cancelRoleBtn = document.getElementById('cancelRoleBtn');
+    const roleForm = document.getElementById('roleForm');
+
+    if (cancelRoleBtn && roleModal) {
+        cancelRoleBtn.addEventListener('click', () => {
+            roleModal.style.display = 'none';
+            roleForm.reset(); // Reset the form fields
+        });
+    }
+
+    // Close role modal button
+    const closeRoleModalBtn = document.querySelector('.close-role-modal');
+    if (closeRoleModalBtn && roleModal) {
+        closeRoleModalBtn.addEventListener('click', () => {
+            roleModal.style.display = 'none';
+            roleForm.reset(); // Reset the form fields
+        });
+    }
 });
 
 // Helper function to format date

@@ -43,30 +43,51 @@ class MemberController {
                         break;
                     case 'addMember':
                         
-                        if (!$this->PA->checkAdmin($_SESSION['user']['id'], $requestData['project_id']) || !$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'addMembers')) {
+                        $userId = $_SESSION['user']['id'];
+                        $projectId = $requestData['project_id'];
+                    
+                        // Vérifie si l'utilisateur est administrateur.
+                        $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                    
+                        // Vérifie si l'utilisateur a la permission de créer une tâche.
+                        $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'addMembers');
+                    
+                        // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                        if (!$isAdmin && !$hasCreatePermission) {
                             http_response_code(403);
-                            header('Content-Type: application/json'); // Ensure JSON response
                             echo json_encode([
                                 'success' => false,
                                 
                             ]);
-                            exit;
+                            return;
                         }
                         
                         $this->addMember($requestData);
                         break;
                     case 'removeMember':
-                        if (!$this->PA->checkAdmin($_SESSION['user']['id'], $requestData['project_id']) || !$this->RP->getUserPermissions($_SESSION['user']['id'], $requestData['project_id'], 'removeMember')) {
+                        $userId = $_SESSION['user']['id'];
+                        $projectId = $requestData['project_id'];
+                    
+                        // Vérifie si l'utilisateur est administrateur.
+                        $isAdmin = $this->PA->checkAdmin($userId, $projectId);
+                    
+                        // Vérifie si l'utilisateur a la permission de créer une tâche.
+                        $hasCreatePermission = $this->RP->getUserPermissions($userId, $projectId, 'removeMember');
+                    
+                        // Si l'utilisateur n'est ni administrateur ni autorisé à créer des tâches.
+                        if (!$isAdmin && !$hasCreatePermission) {
                             http_response_code(403);
-                            header('Content-Type: application/json'); // Ensure JSON response
                             echo json_encode([
                                 'success' => false,
                                 
                             ]);
-                            exit;
+                            return;
                         }
                         $this->removeMember($requestData);
                         break;
+                    case 'updateMemberRole':
+                            $this->EditMemberRole($requestData);
+                            break;
                     case 'getProjectMembers':
                         $this->getProjectMembers($requestData['project_id']);
                         break;
@@ -121,8 +142,33 @@ class MemberController {
             ob_end_clean();
         }
     
+        echo json_encode(['success' => true]);
+    }
+
+
+
+
+
+    private function EditMemberRole($requestData) {
+        $projectId = $requestData['project_id'] ?? null;
+        $userId = $requestData['user_id'] ?? null;
+        $roleName = $requestData['role_id'] ?? null;
+
+
+        $res = $this->memberModel->getRole($roleName);
+        if (!$res) {
+            throw new \Exception('Role not found');
+        }
+       
+        
+        $success = $this->memberModel->editRole($projectId, $userId , $res['id'] );
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+    
         echo json_encode(['success' => $success]);
     }
+
 
     private function removeMember($requestData) {
         $projectId = $requestData['project_id'] ?? null;
