@@ -3,6 +3,7 @@ namespace controllers;
 
 use models\UserModel;
 use entity\UserEntity;
+use config\TokenManager;
 
 class UserController {
     private $userModel;
@@ -25,7 +26,17 @@ class UserController {
         }
         
         if ($result['status'] === 'success') {
-            return ['success' => true, 'user_id' => $result['user_id']];
+            // Get the newly created user
+            $user = $this->userModel->getUserById($result['user_id']);
+            
+            // Generate token
+            $token = TokenManager::generateToken($user);
+
+            return [
+                'success' => true, 
+                'user_id' => $result['user_id'],
+                'token' => $token
+            ];
         }
         
         return ['success' => false, 'message' => $result['message']];
@@ -40,7 +51,14 @@ class UserController {
         }
 
         if ($user['data']['password'] === $password) {
-            return ['success' => true, 'user' => $user['data']];
+            // Generate token
+            $token = TokenManager::generateToken($user['data']);
+
+            return [
+                'success' => true, 
+                'user' => $user['data'],
+                'token' => $token
+            ];
         }
         
         return ['success' => false, 'message' => 'Invalid password'];
@@ -68,7 +86,9 @@ class UserController {
                         exit();
                     }
                     
+                    // Set session and token
                     $_SESSION['user'] = $res['user'];
+                    $_SESSION['token'] = $res['token'];
                     header('Location: /');
                     exit();
     
@@ -95,8 +115,10 @@ class UserController {
                         exit();
                     }
 
-                    $_SESSION['auth_success'] = 'Registration successful! Please login.';
-                    header('Location: /auth');
+                    // Set session and token
+                    $_SESSION['user'] = $res['user_id'];
+                    $_SESSION['token'] = $res['token'];
+                    header('Location: /');
                     exit();
                 }
             }

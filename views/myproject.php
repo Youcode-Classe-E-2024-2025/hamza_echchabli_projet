@@ -6,6 +6,11 @@ if (!isset($_SESSION['user'])) {
     header('Location: /auth');
     exit();
 }
+if (!isset($_SESSION['user'])) {
+    header('Location: /');
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>

@@ -60,6 +60,7 @@ use controllers\AuthController;
 use controllers\TaskController;
 use controllers\MemberController;
 use controllers\RolesController;
+use config\TokenManager;
 
 // Member management routes
 $router->addRoute('POST', 'api/users', function() {
@@ -73,6 +74,55 @@ $router->addRoute('POST', 'roles', function() {
     $controller->handleRequest();
 });
 
+// Authentication Checkpoint
+function checkAuthentication() {
+    // List of routes that do not require authentication
+    $publicRoutes = [
+        '',         // home
+        'auth',     // login/register page
+        'handelauth' // authentication handler
+    ];
+
+    // Get current route
+    $currentRoute = $_GET['route'] ?? '';
+
+    // Check if route requires authentication
+    if (!in_array($currentRoute, $publicRoutes)) {
+        // Check if user is logged in via session
+        if (!isset($_SESSION['user'])) {
+            // If not in session, check for token
+            $token = TokenManager::getTokenFromHeader();
+
+            if (!$token) {
+                // No token found, redirect to login
+                header('Location: /auth');
+                exit;
+            }
+
+            try {
+                // Validate token
+                $tokenData = TokenManager::validateToken($token);
+
+                if (!$tokenData) {
+                    // Invalid token
+                    unset($_SESSION['token']);
+                    header('Location: /auth');
+                    exit;
+                }
+
+                // Store user data in session
+                $_SESSION['user'] = $tokenData;
+            } catch (Exception $e) {
+                // Token validation error
+                header('Location: /auth');
+                exit;
+            }
+        }
+    }
+}
+
+// Call authentication checkpoint before dispatching routes
+checkAuthentication();
 
 // Dispatch the request
 $router->dispatch();

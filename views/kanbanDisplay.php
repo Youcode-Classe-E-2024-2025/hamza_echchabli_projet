@@ -9,6 +9,11 @@ if (!$project_id) {
     header('Location: /');
     exit();
 }
+if (!isset($_SESSION['user'])) {
+    header('Location: /');
+    exit();
+}
+
 
 // Get project details
 $projectModel = new ProjectModel();

@@ -1,3 +1,13 @@
+
+<?php
+if (!isset($_SESSION['user'])) {
+    header('Location: /');
+    exit();
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
